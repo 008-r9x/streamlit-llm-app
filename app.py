@@ -35,6 +35,9 @@ psychic_prompt = """
 少し神秘的で怪談らしい雰囲気を持たせながら、ユーザーの体験に寄り添って回答してください。
 """
 
+# 専門家設定
+expert_prompts = {'科学者':scientist_prompt, '霊能者': psychic_prompt}
+
 # 呼び出しモデルの指定
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
@@ -42,11 +45,13 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 def get_llm_response(input_text, expert_type):
 
     # ラジオボタン選択肢判定
-    if expert_type == "科学者":
-        system_message = scientist_prompt
-    elif expert_type == "霊能者":
-        system_message = psychic_prompt
+    # if expert_type == "科学者":
+    #     system_message = scientist_prompt
+    # elif expert_type == "霊能者":
+    #     system_message = psychic_prompt
 
+    # ラジオボタン選択肢によるプロンプト設定
+    system_message = expert_prompts[expert_type]
     messages = [
         SystemMessage(content=system_message),
         HumanMessage(content=input_text)
@@ -119,11 +124,14 @@ with col2:
 
 if answer_button:
     if input_text:
-        response = get_llm_response(input_text, expert_type)
-        print("-----")
-        print(response)
-        st.write(f"専門家の回答：**{response}**")
-
+        with st.spinner("回答中..."):
+            try:
+                response = get_llm_response(input_text, expert_type)
+                print("-----")
+                print(response)
+                st.write(f"専門家の回答：**{response}**")
+            except Exception as e:
+                st.error(f'エラーが発生しました。：{e}')
     else:
         st.warning("不思議な現象を入力してください")
 
